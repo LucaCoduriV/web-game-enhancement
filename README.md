@@ -81,3 +81,28 @@ Try to split this task into several steps: try to send a message from the client
 
 As for the previous assignment, this exercise mainly consists in integration work that can difficultly be covered by unit tests. 
 Therefore, we will manually evaluate your code by executing it and verifying that multiple players can join and exit the game.
+
+## Prerequisites
+
+- Node 16 (LTS)
+  
+## Setup
+
+Install project dependencies
+```sh
+npm install
+```
+
+Start the server
+```sh
+npm run start
+
+# or start server in watch mode
+# so it automatically restarts on file changes
+npm run watch
+```
+
+Run tests
+```
+npm run test
+```
