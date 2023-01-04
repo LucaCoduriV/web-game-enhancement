@@ -1,34 +1,35 @@
-import { Message } from './message.js';
-import { keysValues } from './constants.js';
+import { Message } from "./message.js";
+import { keysValues } from "./constants.js";
+import WiimoteManager from "./wiimote_manager.js";
 
 const listenedKeysList = new Set([
-  keysValues.arrowLeft,
-  keysValues.arrowRight,
-  keysValues.arrowUp,
-  keysValues.arrowDown,
-  keysValues.space,
+    keysValues.arrowLeft,
+    keysValues.arrowRight,
+    keysValues.arrowUp,
+    keysValues.arrowDown,
+    keysValues.space,
 ]);
 
 const downKeys = new Set();
 
 export function keyDown(listener, event) {
-  const { key } = event;
-  if (listenedKeysList.has(key)) {
-    event.preventDefault();
-    if (!downKeys.has(key)) {
-      downKeys.add(key);
-      listener(new Message(event.type, event.key));
+    const { key } = event;
+    if (listenedKeysList.has(key)) {
+        event.preventDefault();
+        if (!downKeys.has(key)) {
+            downKeys.add(key);
+            listener(new Message(event.type, event.key));
+        }
     }
-  }
 }
 
 export function keyUp(listener, event) {
-  const { key } = event;
-  event.preventDefault();
-  if (downKeys.has(key)) {
-    downKeys.delete(key);
-    listener(new Message(event.type, event.key));
-  }
+    const { key } = event;
+    event.preventDefault();
+    if (downKeys.has(key)) {
+        downKeys.delete(key);
+        listener(new Message(event.type, event.key));
+    }
 }
 
 /**
@@ -36,6 +37,17 @@ export function keyUp(listener, event) {
  * @param listener
  */
 export function keyboard(listener) {
-  window.addEventListener('keydown', (event) => keyDown(listener, event));
-  window.addEventListener('keyup', (event) => keyUp(listener, event));
+    window.addEventListener("keydown", (event) => keyDown(listener, event));
+    window.addEventListener("keyup", (event) => keyUp(listener, event));
+}
+
+/**
+ * A function that listen to "wiimote" events.
+ * @param listener
+ */
+export function wiimote(listener) {
+    new WiimoteManager(
+        (event) => keyUp(listener, event),
+        (event) => keyDown(listener, event)
+    );
 }
