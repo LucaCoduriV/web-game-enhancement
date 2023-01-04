@@ -12,6 +12,7 @@ class WiimoteManager {
         this.keys.set(keysValues.arrowUp, false);
         this.keys.set(keysValues.arrowDown, false);
 
+        this.listenForMicVolume(keyUp, keyDown);
         window.addEventListener(
             "deviceorientation",
             (event) => {
@@ -186,6 +187,64 @@ class WiimoteManager {
     }
     stopGoBackward() {
         this.keys.set(keysValues.arrowDown, false);
+    }
+
+    listenForMicVolume(keyup, keydown) {
+        let isTriggered = false;
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices
+                .getUserMedia({
+                    audio: true,
+                })
+                .then(function (stream) {
+                    const audioContext = new AudioContext();
+                    const analyser = audioContext.createAnalyser();
+                    const microphone = audioContext.createMediaStreamSource(stream);
+                    const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+
+                    analyser.smoothingTimeConstant = 0.8;
+                    analyser.fftSize = 1024;
+
+                    microphone.connect(analyser);
+                    analyser.connect(scriptProcessor);
+                    scriptProcessor.connect(audioContext.destination);
+                    scriptProcessor.onaudioprocess = function () {
+                        const array = new Uint8Array(analyser.frequencyBinCount);
+                        analyser.getByteFrequencyData(array);
+                        const arraySum = array.reduce((a, value) => a + value, 0);
+                        const average = arraySum / array.length;
+                        document.getElementById("volume").innerText = Math.round(average);
+                        if (isTriggered && average < 15) {
+                            console.log("space released");
+                            isTriggered = false;
+                            const event = {
+                                preventDefault: () => {},
+                                key: keysValues.space,
+                                type: "keyup",
+                            };
+                            keyup(event);
+                        }
+
+                        if (!isTriggered && average >= 15) {
+                            console.log("space pressed");
+                            isTriggered = true;
+                            const event = {
+                                preventDefault: () => {},
+                                key: keysValues.space,
+                                type: "keydown",
+                            };
+                            keydown(event);
+                        }
+                    };
+                })
+                .catch(function (err) {
+                    /* handle the error */
+                    console.error(err);
+                });
+        } else {
+            // browser unable to access media devices
+            // (update your browser)
+        }
     }
 }
 
