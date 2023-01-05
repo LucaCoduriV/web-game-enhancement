@@ -12,7 +12,7 @@ function onPlayerIdChange(event) {
 
 function start() {
     // Initialize server connection
-    const socket = new WebSocket("wss://luca-aspire-a515-54G:3001/");
+    const socket = new WebSocket(`wss://luca-aspire-a515-54G:3001/?id=${playerId}`);
 
     socket.onopen = () => {
         const listener = (event) => socket.send(JSON.stringify(event));

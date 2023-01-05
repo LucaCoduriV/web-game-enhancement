@@ -60,11 +60,21 @@ httpServer.listen(3000, () => {
 });
 
 // Websocket game events
-app.ws("/", (socket) => {
+app.ws("/", (socket, req) => {
     sockets.push(socket);
 
-    // Let a new player join the game
-    const player = game.join();
+    const query = req.url.split("?")[1]; // récupère la query string
+    const params = new URLSearchParams(query); // crée un objet URLSearchParams à partir de la query string
+    const id = params.get("id"); // récupère la valeur de la query id
+
+    let player;
+
+    // Si la connection vient d'un remote controller
+    if (id !== null) {
+        player = parseInt(id);
+    } else {
+        player = game.join();
+    }
 
     socket.on("message", (string) => {
         const message = codec.decode(string);
@@ -73,7 +83,10 @@ app.ws("/", (socket) => {
     });
 
     socket.on("close", () => {
-        game.quit(player);
-        sockets = sockets.filter((s) => s !== socket);
+        // Si ce n'est pas un remote controller
+        if (id === null) {
+            game.quit(player);
+            sockets = sockets.filter((s) => s !== socket);
+        }
     });
 });

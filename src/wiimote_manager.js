@@ -4,6 +4,7 @@ class WiimoteManager {
     static TURN_TRIGGER = 10;
     static FORWARD_TRIGGER = 50;
     static BACKWARD_TRIGGER = 70;
+    static SOUND_TRIGGER = 15;
 
     keys = new Map();
     constructor(keyUp, keyDown) {
@@ -14,6 +15,7 @@ class WiimoteManager {
         this.keys.set(keysValues.arrowRight, false);
         this.keys.set(keysValues.arrowUp, false);
         this.keys.set(keysValues.arrowDown, false);
+        this.keys.set(keysValues.space, false);
 
         this.listenForMicVolume();
 
@@ -194,7 +196,6 @@ class WiimoteManager {
     }
 
     listenForMicVolume() {
-        let isTriggered = false;
         navigator.mediaDevices
             .getUserMedia({
                 audio: true,
@@ -215,9 +216,10 @@ class WiimoteManager {
                     const arraySum = array.reduce((a, value) => a + value, 0);
                     const average = arraySum / array.length;
                     document.getElementById("volume").innerText = Math.round(average);
-                    if (isTriggered && average < 15) {
+
+                    if (this.keys.get(keysValues.space) && average < WiimoteManager.SOUND_TRIGGER) {
                         console.log("space released");
-                        isTriggered = false;
+                        this.keys.set(keysValues.space, false);
                         const event = {
                             preventDefault: () => {},
                             key: keysValues.space,
@@ -226,9 +228,12 @@ class WiimoteManager {
                         this.keyUp(event);
                     }
 
-                    if (!isTriggered && average >= 15) {
+                    if (
+                        !this.keys.get(keysValues.space) &&
+                        average >= WiimoteManager.SOUND_TRIGGER
+                    ) {
                         console.log("space pressed");
-                        isTriggered = true;
+                        this.keys.set(keysValues.space, true);
                         const event = {
                             preventDefault: () => {},
                             key: keysValues.space,
@@ -241,7 +246,6 @@ class WiimoteManager {
                 setInterval(getVolume, 50);
             })
             .catch(function (err) {
-                /* handle the error */
                 console.error(err);
             });
     }
