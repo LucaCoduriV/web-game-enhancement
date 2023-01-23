@@ -52,7 +52,7 @@ const httpsServer = https.createServer(
 expressWs(app, httpsServer);
 
 httpsServer.listen(3001, () => {
-    console.log("HTTPS Server running on port 443");
+    console.log("HTTPS Server running on port 3001");
 });
 
 httpServer.listen(3000, () => {
